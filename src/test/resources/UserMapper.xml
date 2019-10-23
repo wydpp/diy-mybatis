@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mapper>
+    <resultMap id="BaseResultMap" type="com.rongzhijia.dc.db.jdbc.entity.datacenter.UserAttributeDecrypt">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="user_id" jdbcType="INTEGER" property="userId" />
+        <result column="attr_id" jdbcType="INTEGER" property="attrId" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="next_sign_time" jdbcType="TIMESTAMP" property="nextSignTime" />
+    </resultMap>
+
+    <select id="selectByExampleWithBLOBs" parameterType="com.rongzhijia.dc.db.jdbc.entity.datacenter.UserAttributeDecryptExample" resultMap="ResultMapWithBLOBs">
+        select
+        <if test="distinct">
+            distinct
+        </if>
+        <include refid="Base_Column_List" />
+        ,
+        <include refid="Blob_Column_List" />
+        from user_attribute_decrypt
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause" />
+        </if>
+        <if test="orderByClause != null">
+            order by ${orderByClause}
+        </if>
+    </select>
+
+</mapper>
