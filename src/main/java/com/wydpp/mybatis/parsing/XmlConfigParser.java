@@ -50,7 +50,7 @@ public class XmlConfigParser {
         if(dataSourceEle == null){
             return null;
         }
-        //次数默认使用dbcp链接池
+        //默认使用自定义的unpooled链接池
         String type = dataSourceEle.attributeValue("type");
         if(type == null){
             type = "unpooled";
