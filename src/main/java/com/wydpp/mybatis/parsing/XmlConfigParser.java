@@ -2,10 +2,13 @@ package com.wydpp.mybatis.parsing;
 
 import com.wydpp.mybatis.datasource.unpooled.UnpooledDataSource;
 import com.wydpp.mybatis.mapping.Environment;
+import com.wydpp.mybatis.mapping.MappedStatement;
 import com.wydpp.mybatis.session.Configuration;
 import org.dom4j.Element;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -16,9 +19,13 @@ import java.util.Properties;
 public class XmlConfigParser {
 
     public Configuration parseConfiguration(Element rootElement){
+        //解析数据源
         Environment environment = parseEnvironments(rootElement.element("environments"));
         Configuration configuration = new Configuration();
         configuration.setEnvironment(environment);
+        //解析Mapper.xml文件
+        Map<String, MappedStatement> mappedStatements = parseMapper(rootElement);
+        configuration.setMappedStatements(mappedStatements);
         return configuration;
     }
 
@@ -77,5 +84,27 @@ public class XmlConfigParser {
             properties.put(ele.attributeValue("name"),ele.attributeValue("value"));
         }
         return properties;
+    }
+
+    /**
+     * 解析XXXMapper.xml文件
+     * @param rootElement
+     * @return
+     */
+    private Map<String, MappedStatement> parseMapper(Element rootElement) {
+        List<Element> mapperElements = rootElement.elements("mappers");
+        if(mapperElements == null || mapperElements.isEmpty()){
+            return null;
+        }
+        Map<String, MappedStatement> mappedStatements = new HashMap<>();
+        for(Element element:mapperElements){
+            MappedStatement statement = parseMappedStatement(element);
+        }
+        return mappedStatements;
+    }
+
+    private MappedStatement parseMappedStatement(Element element) {
+        MappedStatement statement = new MappedStatement();
+        return null;
     }
 }
