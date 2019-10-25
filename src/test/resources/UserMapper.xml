@@ -18,4 +18,16 @@
         </if>
     </select>
 
+    <update id="update" parameterType="com.wydpp.test.User" resultType="java.lang.Integer">
+        update user set
+        <if test="name != null">
+            name = #{name},
+        </if>
+        <if test="age != null">
+            and age = #{age},
+        </if>
+        where id = #{id}
+    </update>
+
+
 </mapper>

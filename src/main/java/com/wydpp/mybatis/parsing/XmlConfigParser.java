@@ -1,11 +1,12 @@
 package com.wydpp.mybatis.parsing;
 
 import com.wydpp.mybatis.datasource.unpooled.UnpooledDataSource;
-import com.wydpp.mybatis.mapping.Environment;
-import com.wydpp.mybatis.mapping.MappedStatement;
+import com.wydpp.mybatis.mapping.*;
 import com.wydpp.mybatis.session.Configuration;
+import org.dom4j.Document;
 import org.dom4j.Element;
 
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,19 +93,87 @@ public class XmlConfigParser {
      * @return
      */
     private Map<String, MappedStatement> parseMapper(Element rootElement) {
-        List<Element> mapperElements = rootElement.elements("mappers");
-        if(mapperElements == null || mapperElements.isEmpty()){
+        Element mapperElements = rootElement.element("mappers");
+        if(mapperElements == null){
             return null;
         }
         Map<String, MappedStatement> mappedStatements = new HashMap<>();
-        for(Element element:mapperElements){
-            MappedStatement statement = parseMappedStatement(element);
+        for(Object element:mapperElements.elements("mapper")){
+            Map<String,MappedStatement> statements = parseMappedStatement((Element)element);
+            mappedStatements.putAll(statements);
         }
         return mappedStatements;
     }
 
-    private MappedStatement parseMappedStatement(Element element) {
-        MappedStatement statement = new MappedStatement();
+    /**
+     * 解析一个xxxMapper.xml文件，可能会有多个MappedStatement
+     * @param element
+     * @return
+     */
+    private Map<String,MappedStatement> parseMappedStatement(Element element) {
+        Map<String, MappedStatement> mappedStatements = new HashMap<>();
+        String resource = element.attributeValue("resource");
+        InputStream inputStream = XmlConfigParser.class.getClassLoader().getResourceAsStream(resource);
+        Document document = DocumentUtils.readDocument(inputStream);
+        if(document == null){
+            //todo exception
+            return mappedStatements;
+        }
+        Element rootMapperElement = document.getRootElement();
+        //todo resultMap如何放入Configuration对象中呢？需要放入吗？
+        //解析resultMap映射内容
+        Map<String, ResultMap> resultMapMap = parseResultMap(rootMapperElement);
+        //解析statement
+        String namespace = rootMapperElement.attributeValue("namespace");
+        List<Element> selectElements = rootMapperElement.elements("select");
+        for(Element selectEle:selectElements){
+            MappedStatement mappedStatement = parseSelectElement(selectEle,namespace,resultMapMap);
+            mappedStatements.put(mappedStatement.getStatementId(),mappedStatement);
+        }
+        //todo update delete
+        return mappedStatements;
+    }
+
+    private Map<String, ResultMap> parseResultMap(Element rootMapperElement){
+        //todo
+        return new HashMap<>();
+    }
+
+    private MappedStatement parseSelectElement(Element selectElement,String namespace, Map<String, ResultMap> resultMapMap){
+        MappedStatement mappedStatement = new MappedStatement();
+        String id = selectElement.attributeValue("id");
+        String parameterType = selectElement.attributeValue("parameterType");
+        Class parameterTypeClass = resolveClass(parameterType);
+        String resultType = selectElement.attributeValue("resultType");
+        Class resultTypeClass = resolveClass(resultType);
+        String resultMap = selectElement.attributeValue("resultMap");
+        if(resultMap != null){
+            mappedStatement.setResultMap(resultMapMap.get(resultMap));
+        }
+        mappedStatement.setStatementId(namespace+id);
+        mappedStatement.setResultType(resultType);
+        ParameterMap parameterMap = new ParameterMap();
+        parameterMap.setParameterType(parameterTypeClass);
+        parameterMap.setId(parameterType);
+        mappedStatement.setParameterMap(parameterMap);
+        mappedStatement.setResultTypeClass(resultTypeClass);
+
+        //解析sql内容
+        XmlScriptParser xmlScriptParser = new XmlScriptParser();
+        SqlSource sqlSource = xmlScriptParser.parseScriptNode(selectElement);
+        mappedStatement.setSqlSource(sqlSource);
+        return mappedStatement;
+    }
+
+    private Class<?> resolveClass(String parameterType) {
+        if(parameterType == null){
+            return null;
+        }
+        try {
+            return Class.forName(parameterType);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 }

@@ -6,9 +6,17 @@ package com.wydpp.mybatis.mapping;
  * @Description: 封装crud标签
  */
 public final class MappedStatement {
+    //唯一标识
     private String statementId;
-    private Class parameterTypeClass;
+    //参数
+    private ParameterMap parameterMap;
+    //返回
     private Class resultTypeClass;
+    //
+    private String resultType;
+    //
+    private ResultMap resultMap;
+    //sql内容解析
     private SqlSource sqlSource;
 
     public String getStatementId() {
@@ -19,12 +27,12 @@ public final class MappedStatement {
         this.statementId = statementId;
     }
 
-    public Class getParameterTypeClass() {
-        return parameterTypeClass;
+    public ParameterMap getParameterMap() {
+        return parameterMap;
     }
 
-    public void setParameterTypeClass(Class parameterTypeClass) {
-        this.parameterTypeClass = parameterTypeClass;
+    public void setParameterMap(ParameterMap parameterMap) {
+        this.parameterMap = parameterMap;
     }
 
     public Class getResultTypeClass() {
@@ -35,22 +43,27 @@ public final class MappedStatement {
         this.resultTypeClass = resultTypeClass;
     }
 
+    public String getResultType() {
+        return resultType;
+    }
+
+    public void setResultType(String resultType) {
+        this.resultType = resultType;
+    }
+
+    public ResultMap getResultMap() {
+        return resultMap;
+    }
+
+    public void setResultMap(ResultMap resultMap) {
+        this.resultMap = resultMap;
+    }
+
     public SqlSource getSqlSource() {
         return sqlSource;
     }
 
     public void setSqlSource(SqlSource sqlSource) {
         this.sqlSource = sqlSource;
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("MappedStatement{");
-        sb.append("statementId='").append(statementId).append('\'');
-        sb.append(", parameterTypeClass=").append(parameterTypeClass);
-        sb.append(", resultTypeClass=").append(resultTypeClass);
-        sb.append(", sqlSource=").append(sqlSource);
-        sb.append('}');
-        return sb.toString();
     }
 }
